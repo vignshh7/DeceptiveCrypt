@@ -7,7 +7,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from encryption.honey_crypto_v2 import honey_encrypt_real_text_v2, honey_decrypt_or_fake_v2
+from encryption.honey_crypto import honey_encrypt_real_text_v2, honey_decrypt_or_fake_v2
 
 # Test research document content
 research_content = """Name=CyberSec Research Team

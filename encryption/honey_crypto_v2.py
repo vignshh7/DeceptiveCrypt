@@ -56,6 +56,8 @@ class AuthenticityMetrics:
 
 
 # Constants
+HONEY_MAGIC_V1 = b"HNY1"
+HONEY_MAGIC_V2 = b"HNY2"
 HONEY_MAGIC_V3 = b"HNY3"
 SCHEMA_PATH = Path(__file__).parent / "field_schemas.json"
 
@@ -312,7 +314,10 @@ def _fa_dte_decode_field(seed: int, key: str, value_kind: str, meta: Dict, schem
     """Field-Aware DTE decoder for individual fields"""
     rnd_state = random.getstate()
     try:
-        field_seed = seed ^ hash(key) & 0xFFFFFFFF
+        # NOTE: Python's built-in hash() is salted per process by default, which would
+        # make decoy generation non-deterministic across restarts. Use a stable hash.
+        field_digest = hashlib.sha256(f"{seed}:{key}".encode("utf-8")).digest()
+        field_seed = int.from_bytes(field_digest[:8], "big") & 0xFFFFFFFF
         random.seed(field_seed)
         
         schema_info = meta.get("schema", {})
@@ -812,6 +817,68 @@ def unpack_honey_blob_v3(blob: bytes) -> Tuple[Dict, bytes, bytes, bytes]:
     return template, salt, nonce, ciphertext
 
 
+def _derive_pseudo_key(passphrase: str, salt: bytes, iterations: int = 150_000) -> bytes:
+    """Legacy pseudo-key derivation used for older honey formats."""
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=iterations,
+    )
+    return kdf.derive(passphrase.encode("utf-8"))
+
+
+def _plausible_english_text(target_len: int, filename: str) -> bytes:
+    """Deterministic-ish padding text for legacy honey formats."""
+    seed = (
+        f"Demo Document\nFile: {filename}\n"
+        f"Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        "This content is synthetic and intended for demonstration purposes only. "
+        "It contains operational notes, status updates, and project summaries.\n\n"
+    )
+    phrases = [
+        "Action items were reviewed and assigned.",
+        "Security posture assessment completed with minor findings.",
+        "Configuration changes validated and documented.",
+        "Service health checks passed; monitoring remains enabled.",
+        "Next steps include review, approval, and rollout planning.",
+    ]
+    out = seed
+    while len(out.encode("utf-8")) < target_len:
+        out += random.choice(phrases) + " "
+    return out.encode("utf-8")[:target_len]
+
+
+def _unpack_honey_blob_v1(blob: bytes) -> Tuple[int, bytes, bytes]:
+    """Unpack legacy HNY1 format: MAGIC(4) + LEN(4) + NONCE(12) + CIPHERTEXT."""
+    if len(blob) < 4 + 4 + 12 + 16:
+        raise ValueError("Invalid honey blob")
+    if not blob.startswith(HONEY_MAGIC_V1):
+        raise ValueError("Invalid honey blob magic")
+    ln = int.from_bytes(blob[4:8], "big")
+    nonce = blob[8:20]
+    ciphertext = blob[20:]
+    return ln, nonce, ciphertext
+
+
+def _unpack_honey_blob_v2(blob: bytes) -> Tuple[Dict, bytes, bytes, bytes]:
+    """Unpack legacy HNY2 format: MAGIC(4) + TMPL_LEN(4) + TMPL + SALT(16) + NONCE(12) + CIPHERTEXT."""
+    if len(blob) < 4 + 4 + 16 + 12 + 16:
+        raise ValueError("Invalid honey blob")
+    if not blob.startswith(HONEY_MAGIC_V2):
+        raise ValueError("Invalid honey blob magic")
+    offset = 4
+    tmpl_len = int.from_bytes(blob[offset : offset + 4], "big")
+    offset += 4
+    tmpl_bytes = blob[offset : offset + tmpl_len]
+    offset += tmpl_len
+    template = json.loads(tmpl_bytes.decode("utf-8"))
+    salt = blob[offset : offset + 16]
+    nonce = blob[offset + 16 : offset + 16 + 12]
+    ciphertext = blob[offset + 16 + 12 :]
+    return template, salt, nonce, ciphertext
+
+
 def honey_encrypt_real_text_v2(plaintext: bytes, correct_passphrase: str, iterations: int, filename: str) -> bytes:
     """Enhanced honey encryption with FA-DTE and schema-driven decoding"""
     salt = os.urandom(16)
@@ -867,10 +934,39 @@ def honey_decrypt_or_fake_v2(blob: bytes, passphrase: str, filename: str) -> byt
             seed = _seed_from_passphrase(passphrase, salt=salt, nonce=nonce)
             fake_data = _fa_dte_decode(seed, template=template, target_len=ln, filename=filename)
             return fake_data
+
+    # Legacy v2 format (template-based, non-field-aware)
+    if blob.startswith(HONEY_MAGIC_V2):
+        template, salt, nonce, ciphertext = _unpack_honey_blob_v2(blob)
+        ln = int(template.get("ln", 2048))
+        try:
+            it = int(template.get("it", 250_000))
+            key = _derive_key(passphrase, salt=salt, iterations=it)
+            aes = AESGCM(key)
+            aad_template = {k: v for k, v in template.items() if k != "ln"}
+            aad = json.dumps(aad_template, ensure_ascii=True, separators=(",", ":")).encode("utf-8")
+            return aes.decrypt(nonce, ciphertext, aad)
+        except Exception:
+            seed = _seed_from_passphrase(passphrase, salt=salt, nonce=nonce)
+            return _fa_dte_decode(seed, template=template, target_len=ln, filename=filename)
+
+    # Legacy v1 format (no template)
+    if blob.startswith(HONEY_MAGIC_V1):
+        ln, nonce, ciphertext = _unpack_honey_blob_v1(blob)
+        pseudo_key = _derive_pseudo_key(passphrase, salt=nonce)
+        aes = AESGCM(pseudo_key)
+        try:
+            return aes.decrypt(nonce, ciphertext, None)
+        except Exception:
+            seed = _seed_from_passphrase(passphrase, salt=b"\x00" * 16, nonce=nonce)
+            rnd_state = random.getstate()
+            try:
+                random.seed(seed)
+                return _plausible_english_text(ln, filename)
+            finally:
+                random.setstate(rnd_state)
     
-    # Fallback to legacy formats
-    from . import honey_crypto
-    return honey_crypto.honey_decrypt_or_fake(blob, passphrase, filename)
+    raise ValueError("Unsupported honey blob format")
 
 
 def validate_honey_authenticity(original_data: bytes, fake_data: bytes, template: Dict, internal_only: bool = True) -> Optional[AuthenticityMetrics]:

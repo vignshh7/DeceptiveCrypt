@@ -18,15 +18,11 @@ from features.feature_extractor import FeatureExtractor
 from detection.anomaly_detector import AnomalyDetector
 from storage.secure_storage import SecureStorage
 
-# Enhanced imports
-try:
-    from encryption.controller_v2 import EnhancedEncryptionController as EncryptionController
-    from data_bootstrap_v2 import EnhancedBootstrap, BootstrapSpecV2
-    HAS_ENHANCED_FEATURES = True
-except ImportError:
-    from encryption.controller import EncryptionController
-    from data_bootstrap import ensure_10_plaintext_originals
-    HAS_ENHANCED_FEATURES = False
+from encryption.controller import EncryptionController
+from data_bootstrap_v2 import EnhancedBootstrap, BootstrapSpecV2
+from data_bootstrap_v2 import ensure_10_plaintext_originals
+
+HAS_ENHANCED_FEATURES = True
 
 
 def _ensure_sandbox_sentinel() -> None:
@@ -122,7 +118,7 @@ def run_system(stop_event: threading.Event, logger, user_passphrase: str) -> Non
     # Log enhanced features status
     if HAS_ENHANCED_FEATURES:
         try:
-            from encryption.honey_crypto_v2 import HAS_ENHANCED_HONEY
+            from encryption.honey_crypto import HAS_ENHANCED_HONEY
             logger.info(f"[FEATURES] Enhanced FA-DTE honey encryption: {'✓' if HAS_ENHANCED_HONEY else '✗'}")
         except ImportError:
             logger.info("[FEATURES] Enhanced FA-DTE honey encryption: ✗")

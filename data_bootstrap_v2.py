@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import time
 import hashlib
+import tempfile
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -21,7 +22,7 @@ from typing import Dict, List, Optional, Any
 
 # Enhanced honey crypto support
 try:
-    from encryption.honey_crypto_v2 import (
+    from encryption.honey_crypto import (
         honey_encrypt_real_text_v2, 
         validate_honey_authenticity,
         HAS_ENHANCED_HONEY
@@ -97,7 +98,16 @@ class EnhancedBootstrap:
     def _is_safe_data_path(self, path: Path) -> bool:
         """Safety guard to avoid accidental deletions outside demo repo"""
         s = str(path.resolve()).lower().replace("\\", "/")
-        return "/crypto_ransomware_system/data/" in s
+        if "/crypto_ransomware_system/data/" in s:
+            return True
+
+        # Tests and demos may use TemporaryDirectory(); allow wiping inside OS temp only.
+        try:
+            tmp_root = Path(tempfile.gettempdir()).resolve()
+            resolved = path.resolve()
+            return tmp_root == resolved or tmp_root in resolved.parents
+        except Exception:
+            return False
     
     def _wipe_dir_contents_v2(self, dir_path: Path, keep_names: set[str], metrics: BootstrapMetrics) -> None:
         """Enhanced directory cleanup with metrics tracking"""

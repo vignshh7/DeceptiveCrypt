@@ -429,21 +429,9 @@ class EnhancedEncryptionController:
             return
 
         if mode == EncryptionMode.HONEY.value:
-            # Use enhanced honey encryption
-            try:
-                from .honey_crypto_v2 import honey_encrypt_real_text_v2
-                with open(src_file, 'rb') as f:
-                    data = f.read()
-                
-                # Store honey encrypted version
-                self._storage.store_honey_encrypted(src_file, user_passphrase, iterations)
-                self._logger.error("[ATTACKER] Enhanced honey encrypted data delivered")
-                self._logger.info("[USER] Real data remains secure with FA-DTE protection")
-                
-            except Exception as e:
-                # Fallback to legacy honey encryption
-                self._storage.store_honey_encrypted(src_file, user_passphrase, iterations)
-                self._logger.warning(f"[WARNING] Fallback to legacy honey encryption: {e}")
+            self._storage.store_honey_encrypted(src_file, user_passphrase, iterations)
+            self._logger.error("[ATTACKER] Honey encrypted data delivered")
+            self._logger.info("[USER] Real data remains secure")
 
 
 # Backwards compatibility

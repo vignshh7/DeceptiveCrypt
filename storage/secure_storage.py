@@ -8,25 +8,7 @@ from pathlib import Path
 
 from config import ENCRYPTED_DIR, FAKE_DIR, StorageConfig, CRYPTO
 from encryption import aes_crypto
-from encryption.honey_crypto import (
-    generate_fake_plaintext,
-    honey_encrypt_bytes,
-    honey_decrypt_bytes,
-    pack_honey_blob,
-    honey_encrypt_real_text,
-    honey_decrypt_or_fake,
-)
-
-# Enhanced honey crypto support
-try:
-    from encryption.honey_crypto_v2 import (
-        honey_encrypt_real_text_v2, 
-        honey_decrypt_or_fake_v2, 
-        validate_honey_authenticity
-    )
-    HAS_ENHANCED_HONEY = True
-except ImportError:
-    HAS_ENHANCED_HONEY = False
+from encryption.honey_crypto import honey_encrypt_real_text, honey_decrypt_or_fake
 
 
 @dataclass(frozen=True)
@@ -95,12 +77,7 @@ class SecureStorage:
         version_path = FAKE_DIR / versions[0]
         blob = version_path.read_bytes()
         
-        # Use enhanced decryption if available
-        if HAS_ENHANCED_HONEY and blob.startswith(b"HNY3"):
-            return honey_decrypt_or_fake_v2(blob, attacker_passphrase, filename=logical_name)
-        else:
-            # Fallback to legacy decryption
-            return honey_decrypt_or_fake(blob, attacker_passphrase, filename=logical_name)
+        return honey_decrypt_or_fake(blob, attacker_passphrase, filename=logical_name)
 
     def _load_index(self, path: Path) -> dict:
         try:
@@ -147,24 +124,13 @@ class SecureStorage:
 
         plaintext = src_file.read_bytes()
         
-        # Use enhanced honey encryption if available
-        if HAS_ENHANCED_HONEY:
-            blob = honey_encrypt_real_text_v2(
-                plaintext,
-                correct_passphrase=passphrase,
-                iterations=iterations,
-                filename=logical,
-            )
-            self._logger.info(f"[INFO] Stored ENHANCED HONEY encrypted version: {version_name}")
-        else:
-            # Fallback to legacy honey encryption
-            blob = honey_encrypt_real_text(
-                plaintext,
-                correct_passphrase=passphrase,
-                iterations=iterations,
-                filename=logical,
-            )
-            self._logger.info(f"[INFO] Stored LEGACY HONEY encrypted version: {version_name}")
+        blob = honey_encrypt_real_text(
+            plaintext,
+            correct_passphrase=passphrase,
+            iterations=iterations,
+            filename=logical,
+        )
+        self._logger.info(f"[INFO] Stored HONEY encrypted version: {version_name}")
         
         _atomic_write(version_path, blob)
 
@@ -176,25 +142,6 @@ class SecureStorage:
 
         return StoredRef(logical_name=logical, version_path=version_path)
 
-    def retrieve_honey_decrypted(self, logical_name: str, out_path: Path, fake_key: bytes) -> Path:
-        index = self._load_index(self._fake_index_path)
-        versions = index.get(logical_name)
-        if not versions:
-            raise FileNotFoundError(f"No honey encrypted version found for {logical_name}")
-        version_path = FAKE_DIR / versions[0]
-        blob = version_path.read_bytes()
-        # Backward compatibility: legacy format nonce+ciphertext
-        if blob[:4] == b"HNY1":
-            # Use packed format for key-based decrypt too
-            ln = int.from_bytes(blob[4:8], "big")
-            nonce, ciphertext = blob[8:20], blob[20:]
-            plaintext = honey_decrypt_bytes(nonce, ciphertext, fake_key)
-        else:
-            nonce, ciphertext = blob[:12], blob[12:]
-            plaintext = honey_decrypt_bytes(nonce, ciphertext, fake_key)
-        _atomic_write(out_path, plaintext)
-        return out_path
-
     def retrieve_honey_for_attacker(self, logical_name: str, out_path: Path, attacker_passphrase: str) -> Path:
         index = self._load_index(self._fake_index_path)
         versions = index.get(logical_name)
@@ -203,12 +150,7 @@ class SecureStorage:
         version_path = FAKE_DIR / versions[0]
         blob = version_path.read_bytes()
         
-        # Use enhanced decryption if available  
-        if HAS_ENHANCED_HONEY and blob.startswith(b"HNY3"):
-            plaintext = honey_decrypt_or_fake_v2(blob, attacker_passphrase, filename=logical_name)
-        else:
-            # Fallback to legacy decryption
-            plaintext = honey_decrypt_or_fake(blob, attacker_passphrase, filename=logical_name)
+        plaintext = honey_decrypt_or_fake(blob, attacker_passphrase, filename=logical_name)
             
         _atomic_write(out_path, plaintext)
         return out_path

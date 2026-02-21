@@ -21,7 +21,7 @@ def test_enhanced_honey_encryption():
     print("-" * 50)
     
     try:
-        from encryption.honey_crypto_v2 import honey_encrypt_real_text_v2, honey_decrypt_or_fake_v2
+        from encryption.honey_crypto import honey_encrypt_real_text_v2, honey_decrypt_or_fake_v2
         
         # Sample structured document
         sample_doc = '''SENSITIVE DOCUMENT
@@ -73,7 +73,7 @@ def test_schema_loading():
     print("-" * 50)
     
     try:
-        from encryption.honey_crypto_v2 import _load_schema
+        from encryption.honey_crypto import _load_schema
         
         schema = _load_schema()
         print(f"✓ Schema version: {schema.get('version', 'unknown')}")
@@ -99,7 +99,7 @@ def test_enhanced_controller():
     print("-" * 50)
     
     try:
-        from encryption.controller_v2 import EnhancedEncryptionController, SystemState
+        from encryption.controller import EnhancedEncryptionController, SystemState
         import logging
         
         # Mock logger

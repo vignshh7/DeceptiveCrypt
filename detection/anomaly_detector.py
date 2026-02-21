@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import numpy as np
+import math
+
+try:
+    import numpy as np
+except Exception:  # pragma: no cover
+    np = None
 
 try:
     from sklearn.ensemble import IsolationForest
@@ -40,12 +45,17 @@ class AnomalyDetector:
         self._baseline: list[list[float]] = []
         self._model = None
 
-        if self._cfg.use_isolation_forest and IsolationForest is not None:
+        # ML scoring requires numpy + sklearn. If either is missing, degrade gracefully.
+        if self._cfg.use_isolation_forest and IsolationForest is not None and np is not None:
             self._model = IsolationForest(
                 n_estimators=200,
                 contamination=0.08,
                 random_state=42,
             )
+
+    @staticmethod
+    def _clip(value: float, lo: float = 0.0, hi: float = 1.0) -> float:
+        return max(lo, min(hi, value))
 
     def _rule_score(self, fv: FeatureVector) -> tuple[float, list[str]]:
         reasons: list[str] = []
@@ -89,12 +99,15 @@ class AnomalyDetector:
         if self._windows_seen < self._cfg.learning_windows:
             return None
 
+        if np is None:
+            return None
+
         x = np.array([fv.as_list()], dtype=float)
         # IsolationForest: higher is more normal; we invert to anomaly score in [0,1]
         raw = float(self._model.decision_function(x)[0])
         # Map raw to [0,1] with a smooth-ish transform
-        anomaly = 1.0 / (1.0 + np.exp(5.0 * raw))
-        return float(np.clip(anomaly, 0.0, 1.0))
+        anomaly = 1.0 / (1.0 + math.exp(5.0 * raw))
+        return self._clip(float(anomaly), 0.0, 1.0)
 
     def update_and_detect(self, fv: FeatureVector) -> DetectionResult:
         self._windows_seen += 1
@@ -111,7 +124,7 @@ class AnomalyDetector:
         combined = rule_score
 
         if ml_score is not None:
-            combined = float(np.clip(0.65 * rule_score + 0.35 * ml_score, 0.0, 1.0))
+            combined = self._clip(0.65 * rule_score + 0.35 * ml_score, 0.0, 1.0)
             if ml_score >= 0.65:
                 reasons.append(f"ML anomaly score: {ml_score:.2f}")
 

@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from cryptography.hazmat.primitives import hashes
 from storage.secure_storage import SecureStorage
 from config import STORAGE, PROTECTED_DIR, CRYPTO, get_env_passphrase
-from data_bootstrap import ensure_10_plaintext_originals
+from data_bootstrap_v2 import ensure_10_plaintext_originals
 from encryption import aes_crypto
 
 try:

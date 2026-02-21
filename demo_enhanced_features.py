@@ -18,13 +18,13 @@ from pathlib import Path
 # Add project root to path
 sys.path.append(str(Path(__file__).parent))
 
-from encryption.honey_crypto_v2 import (
+from encryption.honey_crypto import (
     honey_encrypt_real_text_v2,
     honey_decrypt_or_fake_v2,
     validate_honey_authenticity,
     _load_schema
 )
-from encryption.controller_v2 import (
+from encryption.controller import (
     EnhancedEncryptionController, 
     SystemState, 
     TriggerType,
@@ -130,7 +130,7 @@ confidential=true'''
             
             # Show authenticity validation (INTERNAL ONLY)
             if validate_honey_authenticity:
-                from encryption.honey_crypto_v2 import _infer_template_v2
+                from encryption.honey_crypto import _infer_template_v2
                 template = _infer_template_v2(content, filename)
                 metrics = validate_honey_authenticity(
                     content.encode('utf-8'), 
