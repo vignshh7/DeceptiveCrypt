@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ransomware-Aware AES/Honey Demo</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">
+      <h1>Ransomware-Aware Encryption Demo</h1>
+      <p class="subtitle">AES (Normal) → Honey Encryption (after detection). No fake files stored.</p>
+    </div>
+    <div class="status" id="statusPill">Loading…</div>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <div class="panelHeader">
+        <h2>Encrypted Files (10)</h2>
+      </div>
+      <div id="fileList" class="fileList"></div>
+
+      <div class="actions">
+        <button id="btnSim" class="btn danger">Simulate Ransomware Attack</button>
+        <button id="btnReset" class="btn">Reset System</button>
+      </div>
+
+      <div class="hint">
+        <div><strong>Key hint (demo):</strong> set server env <code>DEMO_SECRET_KEY</code>.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHeader">
+        <h2>Live Logs</h2>
+      </div>
+      <div id="logPanel" class="logPanel"></div>
+    </section>
+  </main>
+
+  <div class="modalBackdrop hidden" id="modalBackdrop">
+    <div class="modal">
+      <div class="modalHeader">
+        <div>
+          <div class="modalTitle" id="modalTitle">Open File</div>
+          <div class="modalSub" id="modalSub">Enter secret key to decrypt</div>
+        </div>
+        <button class="iconBtn" id="modalClose">✕</button>
+      </div>
+
+      <div class="modalBody">
+        <label class="label">Secret key</label>
+        <input id="secretKey" type="password" class="input" placeholder="Enter secret key" autocomplete="off" />
+
+        <div class="modalActions">
+          <button id="btnOpen" class="btn primary">Decrypt & View</button>
+        </div>
+
+        <label class="label">Decrypted content</label>
+        <pre id="contentBox" class="contentBox">(no content yet)</pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+{
+  "version": "2.1",
+  "description": "Field-aware schema definitions for realistic honey decoy generation",
+  "domains": {
+    "security": {
+      "vocabulary": ["incident", "vulnerability", "audit", "compliance", "threat", "mitigation", "forensics", "breach", "detection", "response", "patch", "vulnerability", "malware", "firewall", "encryption", "authentication", "authorization", "certificate", "PKI", "SIEM", "intrusion", "phishing", "social_engineering", "zero_day", "APT", "IOC", "STIX", "TAXII"],
+      "user_patterns": ["sec_", "security_", "admin_", "analyst_"],
+      "email_domains": ["security.corp", "infosec.org", "cybersec.gov"]
+    },
+    "research": {
+      "vocabulary": ["hypothesis", "methodology", "analysis", "dataset", "experiment", "validation", "correlation", "regression", "significance", "confidence", "baseline", "benchmark", "neural", "algorithm", "optimization", "feature", "extraction", "classification", "clustering", "anomaly", "pattern", "recognition", "deep_learning", "machine_learning", "AI", "NLP", "computer_vision", "prototype", "framework", "implementation", "evaluation", "metrics", "performance", "accuracy", "precision", "recall", "testing", "simulation", "modeling", "architecture", "design", "development", "integration", "deployment"],
+      "user_patterns": ["researcher_", "phd_", "prof_", "student_", "team_", "lab_"],
+      "email_domains": ["research.edu", "university.ac", "lab.institute"]
+    },
+    "system": {
+      "vocabulary": ["kernel", "daemon", "process", "thread", "memory", "cache", "buffer", "scheduler", "interrupt", "syscall", "filesystem", "mount", "device", "driver", "module", "library", "binary", "executable", "configuration", "service", "port", "socket", "TCP", "UDP", "HTTP", "HTTPS", "SSL", "TLS", "DNS", "DHCP"],
+      "user_patterns": ["sys_", "root_", "daemon_", "service_"],
+      "email_domains": ["system.local", "ops.internal", "admin.corp"]
+    },
+    "administration": {
+      "vocabulary": ["policy", "procedure", "compliance", "governance", "approval", "workflow", "escalation", "budget", "allocation", "resource", "capacity", "planning", "strategy", "objective", "KPI", "metric", "report", "dashboard", "audit", "review", "assessment", "risk", "mitigation", "contingency", "backup", "recovery"],
+      "user_patterns": ["admin_", "mgr_", "dir_", "coord_"],
+      "email_domains": ["admin.corp", "management.org", "hr.company"]
+    },
+    "networking": {
+      "vocabulary": ["router", "switch", "hub", "bridge", "gateway", "firewall", "proxy", "load_balancer", "VLAN", "subnet", "routing", "protocol", "BGP", "OSPF", "RIP", "EIGRP", "multicast", "unicast", "broadcast", "bandwidth", "latency", "throughput", "QoS", "traffic", "packet", "frame", "ethernet", "wifi", "wireless", "cellular"],
+      "user_patterns": ["net_", "network_", "infra_", "ops_"],
+      "email_domains": ["network.corp", "infrastructure.org", "ops.internal"]
+    }
+  },
+  "field_schemas": {
+    "Name": {
+      "type": "filename",
+      "pattern": "file_\\d+\\.txt|document_\\d+\\.md|report_\\d{4}\\.pdf",
+      "length_range": [8, 25]
+    },
+    "type": {
+      "type": "enum",
+      "values": ["research_notes", "config_file", "log_entry", "finance_summary", "hr_roster", "security_incidents", "student_records", "lab_access_logs", "budget_requests", "admin_memos", "network_config", "system_logs", "audit_report", "compliance_doc", "project_spec"],
+      "domain_mapping": {
+        "research_notes": "research",
+        "security_incidents": "security",
+        "network_config": "networking",
+        "system_logs": "system",
+        "admin_memos": "administration"
+      }
+    },
+    "priority": {
+      "type": "enum", 
+      "values": ["low", "medium", "high", "critical", "urgent", "normal"],
+      "weights": [0.3, 0.4, 0.2, 0.05, 0.03, 0.02]
+    },
+    "status": {
+      "type": "enum",
+      "values": ["pending", "active", "completed", "cancelled", "on_hold", "approved", "rejected", "triage", "investigating", "resolved"],
+      "weights": [0.2, 0.25, 0.15, 0.05, 0.1, 0.1, 0.05, 0.05, 0.03, 0.02]
+    },
+    "department": {
+      "type": "enum",
+      "values": ["Finance", "HR", "IT", "Security", "Research", "Admin", "Labs", "Academics", "Operations", "Management"],
+      "weights": [0.15, 0.12, 0.18, 0.15, 0.12, 0.08, 0.08, 0.07, 0.03, 0.02]
+    },
+    "owner": {
+      "type": "domain_user",
+      "domains": ["security", "research", "system", "administration", "networking"],
+      "length_range": [6, 20]
+    },
+    "approver": {
+      "type": "domain_user", 
+      "domains": ["administration"],
+      "length_range": [8, 25]
+    },
+    "meeting_ts": {
+      "type": "timestamp",
+      "format": "YYYY-MM-DD HH:MM",
+      "time_window": ["2025-01-01", "2026-12-31"],
+      "business_hours": true
+    },
+    "updated": {
+      "type": "date",
+      "format": "YYYY-MM-DD",
+      "recency_bias": 0.7
+    },
+    "created": {
+      "type": "date", 
+      "format": "YYYY-MM-DD",
+      "recency_bias": 0.3
+    },
+    "attendees": {
+      "type": "user_list",
+      "separator": ", ",
+      "count_range": [2, 8],
+      "domains": ["research", "administration", "security"]
+    },
+    "revenue": {
+      "type": "currency",
+      "currency": "INR",
+      "range": [100000, 50000000],
+      "precision": 0
+    },
+    "expenses": {
+      "type": "currency",
+      "currency": "INR", 
+      "range": [50000, 40000000],
+      "precision": 0
+    },
+    "amount": {
+      "type": "currency",
+      "currency": "INR",
+      "range": [1000, 500000],
+      "precision": 0
+    },
+    "budget": {
+      "type": "currency",
+      "currency": "INR",
+      "range": [10000, 2000000],
+      "precision": 0
+    },
+    "gpa": {
+      "type": "float",
+      "range": [6.0, 10.0],
+      "precision": 1
+    },
+    "score": {
+      "type": "float",
+      "range": [0.0, 100.0], 
+      "precision": 1
+    },
+    "eta_hours": {
+      "type": "int",
+      "range": [1, 72]
+    },
+    "timeout": {
+      "type": "int",
+      "range": [30, 3600]
+    },
+    "port": {
+      "type": "int",
+      "range": [1024, 65535]
+    },
+    "approved": {
+      "type": "boolean",
+      "true_probability": 0.7
+    },
+    "confidential": {
+      "type": "boolean", 
+      "true_probability": 0.8
+    },
+    "enabled": {
+      "type": "boolean",
+      "true_probability": 0.6
+    },
+    "contact": {
+      "type": "email",
+      "domains": ["security", "research", "system", "administration", "networking"]
+    },
+    "email": {
+      "type": "email",
+      "domains": ["administration", "research"]
+    },
+    "region": {
+      "type": "enum",
+      "values": ["IN-WEST", "IN-NORTH", "IN-SOUTH", "IN-EAST", "IN-CENTRAL", "US-WEST", "US-EAST", "EU-WEST", "APAC"],
+      "weights": [0.3, 0.25, 0.2, 0.1, 0.05, 0.04, 0.03, 0.02, 0.01]
+    },
+    "currency": {
+      "type": "enum",
+      "values": ["INR", "USD", "EUR", "GBP", "JPY"],
+      "weights": [0.6, 0.2, 0.1, 0.05, 0.05]
+    },
+    "roll_no": {
+      "type": "pattern",
+      "pattern": "[A-Z]{2}\\d{4}",
+      "examples": ["CS2101", "IT2087", "EE2045", "ME2134"]
+    },
+    "ticket": {
+      "type": "pattern", 
+      "pattern": "[A-Z]{3}-\\d{4}",
+      "examples": ["SEC-1842", "INC-2301", "REQ-4455", "BUG-7788"]
+    },
+    "request_id": {
+      "type": "pattern",
+      "pattern": "[A-Z]{2,3}-\\d{4}",
+      "examples": ["BR-7781", "PR-9901", "CR-5544", "HR-3322"]
+    },
+    "lab": {
+      "type": "enum", 
+      "values": ["NetworkSecurityLab", "AIResearchLab", "DatabaseLab", "SoftwareEngLab", "CyberSecLab", "DataScienceLab", "CloudComputingLab"],
+      "weights": [0.2, 0.18, 0.15, 0.15, 0.12, 0.1, 0.1]
+    },
+    "supervisor": {
+      "type": "domain_user",
+      "domains": ["research", "administration"],
+      "length_range": [8, 20]
+    },
+    "project": {
+      "type": "enum",
+      "values": ["ML-Security-Framework", "Ransomware-Detection-AI", "Crypto-Defense-System", "Behavioral-Analysis-Tool", "Network-Anomaly-Detection", "Data-Protection-Protocol", "Threat-Intelligence-Platform", "Security-Automation", "Privacy-Preservation-Tech", "Cyber-Forensics-Suite"],
+      "weights": [0.15, 0.12, 0.1, 0.1, 0.1, 0.1, 0.09, 0.08, 0.08, 0.08]
+    },
+    "milestone": {
+      "type": "enum",
+      "values": ["planning", "design", "prototype", "development", "testing", "integration", "validation", "deployment", "documentation", "review"],
+      "weights": [0.1, 0.15, 0.12, 0.18, 0.15, 0.1, 0.08, 0.05, 0.04, 0.03]
+    },
+    "action_item_1": {
+      "type": "research_action",
+      "templates": ["Collect {data_type} for {number} {time_unit}", "Validate {component} quality on {test_type} files", "Document {process} behavior", "Implement {feature} in {system}", "Analyze {metric} patterns", "Test {algorithm} performance", "Review {document_type} specifications"]
+    },
+    "action_item_2": {
+      "type": "research_action",
+      "templates": ["Optimize {algorithm} for better {metric}", "Integrate {component} with {system}", "Evaluate {method} effectiveness", "Prepare {deliverable} for {timeline}", "Conduct {test_type} analysis", "Update {artifact} documentation"]
+    },
+    "action_item_3": {
+      "type": "research_action",
+      "templates": ["Finalize {component} implementation", "Present {results} to {stakeholder}", "Deploy {system} to {environment}", "Archive {data} in {repository}", "Schedule {meeting_type} review"]
+    }
+  },
+  "content_templates": {
+    "finance_summary": {
+      "required_fields": ["revenue", "expenses", "currency", "region"],
+      "optional_fields": ["profit", "forecast_next_quarter", "approved"],
+      "domain": "administration"
+    },
+    "security_incidents": {
+      "required_fields": ["ticket", "priority", "status", "owner"],
+      "optional_fields": ["eta_hours", "contact"],
+      "domain": "security"
+    },
+    "research_notes": {
+      "required_fields": ["type", "project", "milestone", "owner", "priority", "status"],
+      "optional_fields": ["action_item_1", "action_item_2", "action_item_3", "meeting_ts", "attendees", "contact", "confidential"],
+      "domain": "research"
+    },
+    "system_logs": {
+      "required_fields": ["type", "status", "updated"],
+      "optional_fields": ["port", "timeout", "enabled"],
+      "domain": "system"
+    }
+  }
+}

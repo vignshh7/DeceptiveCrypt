@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# VS Code / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Secrets / local config
+.env
+
+# Local outputs / artifacts
+.dist/
+logs/
+
+# Generated datasets & ransomware simulation artifacts
+/data/encrypted_files/
+/data/fake_files/
+/data/protected_files/
+
+# Generated controller/metrics state (local runtime artifacts)
+controller_state.json
+bootstrap_metrics.json
+
+# Test output artifact
+test_out.txt

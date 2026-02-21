@@ -1,0 +1,7 @@
+watchdog==4.0.1
+cryptography==42.0.8
+numpy==1.26.4
+scikit-learn==1.5.1
+fastapi==0.115.8
+uvicorn==0.30.6
+python-dotenv==1.0.1

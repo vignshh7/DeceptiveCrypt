@@ -1,0 +1,249 @@
+:root {
+  --bg: #0b0f14;
+  --panel: #111826;
+  --panel2: #0f1623;
+  --text: #e6eefc;
+  --muted: #a9b7d0;
+  --line: #22314a;
+  --good: #2dd4bf;
+  --bad: #fb7185;
+  --warn: #fbbf24;
+  --btn: #1f2a3d;
+  --btn2: #24344f;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: radial-gradient(1200px 800px at 20% 10%, #122036 0%, var(--bg) 60%);
+  color: var(--text);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.title h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.subtitle {
+  margin: 6px 0 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.status {
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  font-weight: 600;
+  font-size: 12px;
+  min-width: 220px;
+  text-align: center;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 14px;
+}
+
+.panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--panel2) 100%);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.panelHeader {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.panelHeader h2 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.fileList {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 54vh;
+  overflow: auto;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+}
+
+.fileName {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.btn {
+  border: 1px solid var(--line);
+  background: var(--btn);
+  color: var(--text);
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.btn:hover { background: var(--btn2); }
+
+.btn.primary {
+  border-color: rgba(45,212,191,0.35);
+  background: rgba(45,212,191,0.15);
+}
+
+.btn.danger {
+  border-color: rgba(251,113,133,0.35);
+  background: rgba(251,113,133,0.14);
+}
+
+.actions {
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.hint {
+  padding: 0 10px 12px 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.hint code {
+  background: rgba(255,255,255,0.05);
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+
+.logPanel {
+  padding: 10px;
+  max-height: 68vh;
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.logLine {
+  padding: 6px 8px;
+  border-bottom: 1px dashed rgba(34,49,74,0.6);
+  white-space: pre-wrap;
+}
+
+.logLine .lvl { font-weight: 800; margin-right: 8px; }
+
+.lvl-INFO { color: var(--good); }
+.lvl-WARN { color: var(--warn); }
+.lvl-ALERT { color: var(--bad); }
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0,0,0,0.6);
+}
+
+.hidden { display: none; }
+
+.modal {
+  width: min(860px, 96vw);
+  background: #0c1421;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modalTitle { font-weight: 800; }
+.modalSub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+.iconBtn {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+
+.modalBody {
+  padding: 14px;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 10px 0 6px 0;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.contentBox {
+  margin: 8px 0 0 0;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.02);
+  border-radius: 10px;
+  padding: 10px;
+  min-height: 240px;
+  max-height: 40vh;
+  overflow: auto;
+}
+
+@media (max-width: 980px) {
+  .layout { grid-template-columns: 1fr; }
+  .fileList { max-height: 42vh; }
+  .logPanel { max-height: 42vh; }
+}
